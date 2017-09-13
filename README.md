@@ -69,14 +69,12 @@ Note that `completeTransactions()` **should only be called once** in your code, 
 ```swift
 SwiftyStoreKit.retrieveProductsInfo(["com.musevisions.SwiftyStoreKit.Purchase1"]) { result in
     if let product = result.retrievedProducts.first {
-        let priceString = product.localizedPrice!
-        print("Product: \(product.localizedDescription), price: \(priceString)")
-    }
-    else if let invalidProductId = result.invalidProductIDs.first {
-        return alertWithTitle("Could not retrieve product info", message: "Invalid product identifier: \(invalidProductId)")
-    }
-    else {
-	     print("Error: \(result.error)")
+	let priceString = product.localizedPrice!
+	print("Product: \(product.localizedDescription), price: \(priceString)")
+    } else if result.invalidProductIDs.first != nil {
+	return print("Could not retrieve product info")
+    } else {
+	print("Error: \(String(describing: result.error))")
     }
 }
 ```
@@ -112,23 +110,24 @@ SwiftyStoreKit.purchaseProduct("com.musevisions.SwiftyStoreKit.Purchase1", quant
 SwiftyStoreKit.purchaseProduct("com.musevisions.SwiftyStoreKit.Purchase1", quantity: 1, atomically: false) { result in
     switch result {
     case .success(let product):
-        // fetch content from your server, then:
-        if product.needsFinishTransaction {
-            SwiftyStoreKit.finishTransaction(product.transaction)
-        }
-        print("Purchase Success: \(product.productId)")
+	// fetch content from your server, then:
+	if product.needsFinishTransaction {
+	    SwiftyStoreKit.finishTransaction(product.transaction)
+	}
+	userData.set(true, forKey: "removeAds")
+	print("Purchase Success: \(product.productId)")
     case .error(let error):
-        switch error.code {
-        case .unknown: print("Unknown error. Please contact support")
-        case .clientInvalid: print("Not allowed to make the payment")
-        case .paymentCancelled: break
-        case .paymentInvalid: print("The purchase identifier was invalid")
-        case .paymentNotAllowed: print("The device is not allowed to make the payment")
-        case .storeProductNotAvailable: print("The product is not available in the current storefront")
-        case .cloudServicePermissionDenied: print("Access to cloud service information is not allowed")
-        case .cloudServiceNetworkConnectionFailed: print("Could not connect to the network")
-        case .cloudServiceRevoked: print("User has revoked permission to use this cloud service")
-        }
+	switch error.code {
+	case .unknown: print("Unknown error. Please contact support")
+	case .clientInvalid: print("Not allowed to make the payment")
+	case .paymentCancelled: break
+	case .paymentInvalid: print("The purchase identifier was invalid")
+	case .paymentNotAllowed: print("The device is not allowed to make the payment")
+	case .storeProductNotAvailable: print("The product is not available in the current storefront")
+	case .cloudServicePermissionDenied: print("Access to cloud service information is not allowed")
+	case .cloudServiceNetworkConnectionFailed: print("Could not connect to the network")
+	case .cloudServiceRevoked: print("User has revoked permission to use this cloud service")
+	}
     }
 }
 ```
